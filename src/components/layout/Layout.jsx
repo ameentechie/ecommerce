@@ -11,7 +11,17 @@ const Layout = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Header />
-      <Container component="main" sx={{ flexGrow: 1, py: 4 }}>
+      <Container 
+        component="main" 
+        maxWidth={false} 
+        disableGutters
+        sx={{ 
+          flexGrow: 1,
+          width: '100%',
+          m: 0,
+          p: 0
+        }}
+      >
         <Outlet />
       </Container>
       <Footer />
