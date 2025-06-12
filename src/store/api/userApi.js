@@ -86,6 +86,33 @@ export const userApi = apiSlice.injectEndpoints({
       },
       invalidatesTags: ['Users'],
     }),
+    updateUser: builder.mutation({
+      query: (user) => ({
+        url: `/users/${user.id}`,
+        method: 'PUT',
+        body: user,
+      }),
+      transformResponse: (response) => {
+        if (!response) {
+          throw new Error('No response from server');
+        }
+        return {
+          id: response.id,
+          username: response.username,
+          email: response.email,
+          name: response.name,
+          phone: response.phone,
+          address: response.address,
+        };
+      },
+      transformErrorResponse: (response) => {
+        if (response.status === 404) {
+          return { message: 'User not found' };
+        }
+        return { message: 'Failed to update profile. Please try again.' };
+      },
+      invalidatesTags: (result, error, { id }) => [{ type: 'Users', id }],
+    }),
     getCarts: builder.query({
       query: () => '/carts',
       providesTags: ['Carts'],
@@ -122,6 +149,7 @@ export const {
   useGetUsersQuery,
   useGetUserByIdQuery,
   useCreateUserMutation,
+  useUpdateUserMutation,
   useGetCartsQuery,
   useGetCartByIdQuery,
   useGetUserCartQuery,
