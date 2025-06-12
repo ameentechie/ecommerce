@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Placeholder pages - to be implemented by trainees
@@ -10,7 +11,6 @@ const ProductsPage = () => <div>Products Page (to be implemented)</div>;
 const ProductDetailPage = () => <div>Product Detail Page (to be implemented)</div>;
 const CartPage = () => <div>Cart Page (to be implemented)</div>;
 const CheckoutPage = () => <div>Checkout Page (to be implemented)</div>;
-const ProfilePage = () => <div>Profile Page (to be implemented)</div>;
 const OrderHistoryPage = () => <div>Order History Page (to be implemented)</div>;
 const NotFoundPage = () => <div>404 - Page Not Found</div>;
 

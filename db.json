@@ -25,22 +25,21 @@
       "id": "b5ca",
       "email": "adhi@gmail.com",
       "username": "Adhi",
-      "password": "adhi@123",
       "name": {
         "firstname": "Adhi",
         "lastname": "v"
       },
+      "phone": "9658745123",
       "address": {
-        "city": "",
-        "street": "",
-        "number": 0,
-        "zipcode": "",
+        "city": "Kannur",
+        "street": "Kannur",
+        "number": 123,
+        "zipcode": "670741",
         "geolocation": {
           "lat": "",
           "long": ""
         }
-      },
-      "phone": ""
+      }
     }
   ],
   "products": [
