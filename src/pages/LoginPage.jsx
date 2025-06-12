@@ -98,23 +98,22 @@ const LoginPage = () => {
     }
     
     try {
-      // For demo purposes, we'll use the Fake Store API login endpoint
       const result = await login({
         username: formData.username,
         password: formData.password,
       }).unwrap();
       
       // Store user credentials in Redux
-      dispatch(setCredentials({
-        user: result.user,
-        token: result.token,
-      }));
+      dispatch(setCredentials(result));
       
       // Navigate to the previous page or home
       navigate(from, { replace: true });
     } catch (err) {
       console.error('Login failed:', err);
-      // Error is handled by RTK Query and available in the error variable
+      setFormErrors({
+        ...formErrors,
+        submit: err.data?.message || 'Invalid username or password. Please try again.',
+      });
     }
   };
   
@@ -153,11 +152,9 @@ const LoginPage = () => {
         </Typography>
         
         {/* Error message */}
-        {error && (
+        {(error || formErrors.submit) && (
           <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
-            {error.status === 401
-              ? 'Invalid username or password'
-              : 'Login failed. Please try again.'}
+            {formErrors.submit || error?.data?.message || 'Login failed. Please try again.'}
           </Alert>
         )}
         
@@ -227,29 +224,23 @@ const LoginPage = () => {
             Demo Login
           </Button>
           
-          <Grid container>
-            <Grid item xs>
-              <Link component={RouterLink} to="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
-            <Grid item>
-              <Link component={RouterLink} to="/register" variant="body2">
-                {"Don't have an account? Sign Up"}
-              </Link>
-            </Grid>
-          </Grid>
-        </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 2 }}>
+            <Link component={RouterLink} to="#" variant="body2">
+              Forgot password?
+            </Link>
+            <Link component={RouterLink} to="/register" variant="body2">
+              {"Don't have an account? Sign Up"}
+            </Link>
+          </Box>
         
-        <Divider sx={{ my: 3, width: '100%' }}>
-          <Typography variant="body2" color="text.secondary">
-            OR
-          </Typography>
-        </Divider>
-        
-        {/* Social Login Buttons */}
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+          <Divider sx={{ my: 3, width: '100%' }}>
+            <Typography variant="body2" color="text.secondary">
+              OR
+            </Typography>
+          </Divider>
+          
+          {/* Social Login Buttons */}
+          <Box sx={{ display: 'flex', gap: 2, width: '100%' }}>
             <Button
               fullWidth
               variant="outlined"
@@ -258,8 +249,6 @@ const LoginPage = () => {
             >
               Google
             </Button>
-          </Grid>
-          <Grid item xs={6}>
             <Button
               fullWidth
               variant="outlined"
@@ -268,8 +257,8 @@ const LoginPage = () => {
             >
               Facebook
             </Button>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Paper>
     </Container>
   );
