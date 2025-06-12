@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   AppBar,
   Box,
@@ -30,6 +30,7 @@ import {
   Category,
   Person,
 } from '@mui/icons-material';
+import { logout } from '../../store/slices/userSlice';
 
 // Styled components for search bar
 const Search = styled('div')(({ theme }) => ({
@@ -76,18 +77,18 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
  */
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = useState(null);
   const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Get cart item count from Redux store
-  // This is a placeholder - in a real app, you would use a selector
   const cartItemCount = useSelector(state => state.cart?.items?.length || 0);
   
   // Check if user is authenticated
-  // This is a placeholder - in a real app, you would use a selector
-  const isAuthenticated = useSelector(state => state.user?.isAuthenticated || false);
+  const { user, token } = useSelector(state => state.user);
+  const isAuthenticated = Boolean(user && token);
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMenuAnchorEl);
@@ -121,6 +122,12 @@ const Header = () => {
     }
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+    handleMenuClose();
+    navigate('/');
+  };
+
   // Menu for user account
   const renderMenu = (
     <Menu
@@ -145,7 +152,7 @@ const Header = () => {
           <MenuItem key="orders" onClick={() => { handleMenuClose(); navigate('/orders'); }}>
             Orders
           </MenuItem>,
-          <MenuItem key="logout" onClick={handleMenuClose}>
+          <MenuItem key="logout" onClick={handleLogout}>
             Logout
           </MenuItem>
         ]
