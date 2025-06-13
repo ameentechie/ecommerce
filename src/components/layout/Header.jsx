@@ -33,7 +33,7 @@ import {
   Home,
   Category,
 } from '@mui/icons-material';
-import { logout } from '../../store/slices/userSlice';
+import { logout, selectCurrentUser, selectCurrentToken } from '../../store/slices/userSlice';
 import { useGetProductsQuery } from '../../store/api/productApi';
 
 // Styled components for search bar
@@ -80,7 +80,8 @@ const Header = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const cartItemCount = useSelector(state => state.cart?.items?.length || 0);
-  const { user, token } = useSelector(state => state.user);
+  const user = useSelector(selectCurrentUser);
+  const token = useSelector(selectCurrentToken);
   const isAuthenticated = Boolean(user && token);
 
   // Fetch products for search suggestions

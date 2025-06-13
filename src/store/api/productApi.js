@@ -1,9 +1,16 @@
-import { apiSlice } from './apiSlice';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
-export const productApi = apiSlice.injectEndpoints({
+
+export const productApi = createApi({
+  reducerPath: 'productApi',
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://fakestoreapi.com' }),
+  tagTypes: ['Products', 'Categories'],
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: () => '/products',
+      query: ({ category, limit }) => ({
+        url: category ? `/products/category/${category}` : '/products',
+        params: limit ? { limit } : {},
+      }),
       providesTags: ['Products'],
     }),
     getProductById: builder.query({
