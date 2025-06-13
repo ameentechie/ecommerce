@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
 // Placeholder pages - to be implemented by trainees
-const HomePage = () => <div>Home Page (to be implemented)</div>;
 const ProductsPage = () => <div>Products Page (to be implemented)</div>;
 const ProductDetailPage = () => <div>Product Detail Page (to be implemented)</div>;
 const CartPage = () => <div>Cart Page (to be implemented)</div>;
