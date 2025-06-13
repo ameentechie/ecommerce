@@ -26,29 +26,29 @@ const Navbar = () => {
     textTransform: 'none',
     fontSize: '16px',
     textDecoration: 'none',
-    margin: '0 10px', // spacing between links
+    margin: '0 10px',
   });
 
   return (
     <>
       <AppBar
-        position="sticky"
-        color="default"
-        elevation={2}
+        position="fixed"
         sx={{
-          backgroundColor: '#ffe6f0', // light pink background
+          top: '60px', // position below header
+          backgroundColor: '#ffe6f0',
           borderBottom: '1px solid #e0e0e0',
+          width: '100%',
+          zIndex: (theme) => theme.zIndex.appBar + 1, // below header
         }}
       >
         <Toolbar sx={{ py: 1 }}>
-          {/* ALL LINKS */}
           <Box
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
               flexGrow: 1,
               alignItems: 'center',
-              flexWrap: 'wrap', // responsive on small screens
+              flexWrap: 'wrap',
             }}
           >
             <Button color="inherit" component={NavLink} to="/" style={navLinkStyle}>
