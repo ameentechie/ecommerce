@@ -1,21 +1,31 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import store from './store/store';
+
+// Layout and Auth Components
 import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+
+// Page Components
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
-import ProtectedRoute from './components/auth/ProtectedRoute';
+import ProductsPage from './pages/ProductsPage';// Fixed typo
+import CartPage from './pages/CartPage';
 
-// Placeholder pages - to be implemented by trainees
-const ProductsPage = () => <div>Products Page (to be implemented)</div>;
-const ProductDetailPage = () => <div>Product Detail Page (to be implemented)</div>;
-const CartPage = () => <div>Cart Page (to be implemented)</div>;
-const CheckoutPage = () => <div>Checkout Page (to be implemented)</div>;
-const OrderHistoryPage = () => <div>Order History Page (to be implemented)</div>;
-const NotFoundPage = () => <div>404 - Page Not Found</div>;
+// Cart/Order Components
+import CheckoutPage from './components/cart/CheckoutPage';
+import OrderConfirmationPage from './components/cart/OrderConfirmationPage';
+import ProductDetailPage from './pages/ProductDetailPage.';
 
-function App() {
-  return (
+// You'll need to create these components:
+// import OrderHistoryPage from './pages/OrderHistoryPage';
+// import NotFoundPage from './pages/NotFoundPage';
+
+const App = () => (
+  <Provider store={store}>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
@@ -28,14 +38,15 @@ function App() {
           {/* Protected Routes */}
           <Route path="cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />
           <Route path="checkout" element={<ProtectedRoute><CheckoutPage /></ProtectedRoute>} />
+          <Route path="order-confirmation" element={<ProtectedRoute><OrderConfirmationPage /></ProtectedRoute>} />
           <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} />
+          {/* <Route path="orders" element={<ProtectedRoute><OrderHistoryPage /></ProtectedRoute>} /> */}
           
-          <Route path="*" element={<NotFoundPage />} />
+          {/* <Route path="*" element={<NotFoundPage />} /> */}
         </Route>
       </Routes>
     </BrowserRouter>
-  );
-}
+  </Provider>
+);
 
 export default App;

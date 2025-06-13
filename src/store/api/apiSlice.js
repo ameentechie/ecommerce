@@ -21,4 +21,6 @@ export const apiSlice = createApi({
   baseQuery,
   tagTypes: ['Products', 'Categories', 'Users', 'Carts'],
   endpoints: () => ({}),
+  baseQuery: fetchBaseQuery({ baseUrl: 'https://fakestoreapi.com/' }),
+  endpoints: () => ({})
 });

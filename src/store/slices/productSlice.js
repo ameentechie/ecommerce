@@ -1,68 +1,43 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { productApi } from '../api/productApi';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  filters: {
-    category: 'all',
-    priceRange: [0, 1000],
-    rating: 0,
-    searchQuery: '',
-  },
-  sortBy: 'price',
-  sortOrder: 'asc',
-  viewMode: 'grid', // 'grid' or 'list'
+  products: [],
+  status: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+  error: null,
+  selectedCategory: "all",
+  sortOption: "price_asc",
 };
 
 const productSlice = createSlice({
-  name: 'products',
+  name: "product",
   initialState,
   reducers: {
-    setCategory: (state, action) => {
-      state.filters.category = action.payload;
+    setProducts: (state, action) => {
+      state.products = action.payload;
+      state.status = "succeeded";
     },
-    setPriceRange: (state, action) => {
-      state.filters.priceRange = action.payload;
+    setLoading: (state) => {
+      state.status = "loading";
     },
-    setRating: (state, action) => {
-      state.filters.rating = action.payload;
+    setError: (state, action) => {
+      state.status = "failed";
+      state.error = action.payload;
     },
-    setSearchQuery: (state, action) => {
-      state.filters.searchQuery = action.payload;
+    setSelectedCategory: (state, action) => {
+      state.selectedCategory = action.payload;
     },
-    setSortBy: (state, action) => {
-      state.sortBy = action.payload;
+    setSortOption: (state, action) => {
+      state.sortOption = action.payload;
     },
-    setSortOrder: (state, action) => {
-      state.sortOrder = action.payload;
-    },
-    setViewMode: (state, action) => {
-      state.viewMode = action.payload;
-    },
-    resetFilters: (state) => {
-      state.filters = initialState.filters;
-      state.sortBy = initialState.sortBy;
-      state.sortOrder = initialState.sortOrder;
-    },
-  },
-  extraReducers: (builder) => {
-    builder.addMatcher(
-      productApi.endpoints.getProducts.matchFulfilled,
-      (state, action) => {
-        // Optional: Add any additional state updates when products are fetched
-      }
-    );
   },
 });
 
 export const {
-  setCategory,
-  setPriceRange,
-  setRating,
-  setSearchQuery,
-  setSortBy,
-  setSortOrder,
-  setViewMode,
-  resetFilters,
+  setProducts,
+  setLoading,
+  setError,
+  setSelectedCategory,
+  setSortOption,
 } = productSlice.actions;
 
 export default productSlice.reducer;

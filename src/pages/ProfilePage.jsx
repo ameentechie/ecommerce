@@ -30,12 +30,12 @@ import {
   Cancel as CancelIcon,
 } from '@mui/icons-material';
 import { useGetUserByIdQuery, useUpdateUserMutation } from '../store/api/userApi';
-import { updateUserProfile } from '../store/slices/userSlice';
+import { updateUserProfile, selectCurrentUser } from '../store/slices/userSlice';
 
 const ProfilePage = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const currentUser = useSelector((state) => state.user.user);
+  const currentUser = useSelector(selectCurrentUser);
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState({});
 

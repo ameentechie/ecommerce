@@ -3,9 +3,11 @@ import React from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { Box, Container, Typography, Grid, Link } from '@mui/material';
+import { selectCurrentUser, selectCurrentToken } from '../../store/slices/userSlice';
 
 const Footer = () => {
-  const { user, token } = useSelector(state => state.user);
+  const user = useSelector(selectCurrentUser);
+  const token = useSelector(selectCurrentToken);
   const isAuthenticated = Boolean(user && token);
 
   const linkStyle = {

@@ -6,12 +6,8 @@ import { format } from 'date-fns';
  * @param {string} currency - The currency code (default: USD)
  * @returns {string} Formatted price string
  */
-export const formatPrice = (price, currency = 'USD') => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 2,
-  }).format(price);
+export const formatPrice = (price) => {
+  return `$${Number(price).toFixed(2)}`;
 };
 
 /**
