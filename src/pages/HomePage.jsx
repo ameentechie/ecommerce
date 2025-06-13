@@ -166,11 +166,7 @@ const HomePage = () => {
             sx={{ 
               fontWeight: 'bold',
               mb: 1,
-              background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: 'text.primary'
             }}
           >
             Shop by Category
@@ -322,11 +318,7 @@ const HomePage = () => {
                 sx={{ 
                   fontWeight: 'bold',
                   mb: 1,
-                  background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: 'text.primary'
                 }}
               >
                 Featured Products
@@ -412,21 +404,28 @@ const HomePage = () => {
                   justifyContent: 'flex-start'
                 }}
               >
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 'bold',
-                    mb: 3,
-                    background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                    backgroundClip: 'text',
-                    textFillColor: 'transparent',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  Best of Electronics
-                </Typography>
-                <Grid container spacing={2}>
+                <Box sx={{ mb: 3 }}>
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      fontWeight: 'bold',
+                      mb: 2,
+                      color: 'text.primary'
+                    }}
+                  >
+                    Best of Electronics
+                  </Typography>
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                      color: 'text.secondary',
+                      fontSize: '0.95rem'
+                    }}
+                  >
+                    Discover our curated selection of premium electronic devices
+                  </Typography>
+                </Box>
+                <Grid container spacing={2} sx={{ mt: 2 }}>
                   {(() => {
                     if (isLoading) {
                       return Array.from(new Array(4)).map((_, idx) => (
@@ -520,7 +519,7 @@ const HomePage = () => {
                             <Typography 
                               variant="body2" 
                               sx={{ 
-                                color: 'primary.main',
+                                color: '#1B5E20', // Dark green color
                                 fontWeight: 'bold',
                                 fontSize: '1rem'
                               }}
@@ -548,11 +547,7 @@ const HomePage = () => {
             sx={{ 
               fontWeight: 'bold',
               mb: 1,
-              background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-              backgroundClip: 'text',
-              textFillColor: 'transparent',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              color: 'text.primary'
             }}
           >
             Why Choose Us
