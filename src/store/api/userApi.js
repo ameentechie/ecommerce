@@ -21,12 +21,16 @@ export const userApi = apiSlice.injectEndpoints({
         // Create a simple token (in a real app, this would come from a proper auth server)
         const token = btoa(`${user.username}:${user.password}`);
         
+        // Return the complete user object with all fields
         return {
           user: {
             id: user.id,
             username: user.username,
             email: user.email,
             name: user.name,
+            phone: user.phone,
+            address: user.address,
+            password: user.password,
           },
           token,
         };
@@ -96,6 +100,7 @@ export const userApi = apiSlice.injectEndpoints({
         if (!response) {
           throw new Error('No response from server');
         }
+        // Return the complete user object
         return {
           id: response.id,
           username: response.username,
@@ -103,6 +108,7 @@ export const userApi = apiSlice.injectEndpoints({
           name: response.name,
           phone: response.phone,
           address: response.address,
+          password: response.password, // Include password if it exists
         };
       },
       transformErrorResponse: (response) => {
