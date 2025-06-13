@@ -1,3 +1,4 @@
+// src/components/layout/Header.jsx
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -19,34 +20,26 @@ import {
   ListItemIcon,
   Divider,
 } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
 import {
   Menu as MenuIcon,
   Search as SearchIcon,
   AccountCircle,
   ShoppingCart,
-  Favorite,
   Home,
   Category,
-  Person,
 } from '@mui/icons-material';
 import { logout } from '../../store/slices/userSlice';
 
-// Styled components for search bar
+// Styled components for search bar (Amazon style)
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
+  borderRadius: '4px',
+  backgroundColor: '#fff',
+  marginLeft: theme.spacing(3),
+  marginRight: theme.spacing(3),
   width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
+  maxWidth: '600px',
 }));
 
 const SearchIconWrapper = styled('div')(({ theme }) => ({
@@ -60,54 +53,37 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
 }));
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
+  color: '#000',
   '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
+    padding: theme.spacing(1.2, 1, 1.2, 0),
     paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
     width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
+    '::placeholder': {
+      color: '#555',
+      opacity: 1,
     },
   },
 }));
 
-/**
- * Header component with navigation, search, and user controls
- */
 const Header = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [mobileMenuAnchorEl, setMobileMenuAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Get cart item count from Redux store
   const cartItemCount = useSelector(state => state.cart?.items?.length || 0);
-  
-  // Check if user is authenticated
   const { user, token } = useSelector(state => state.user);
   const isAuthenticated = Boolean(user && token);
 
   const isMenuOpen = Boolean(anchorEl);
-  const isMobileMenuOpen = Boolean(mobileMenuAnchorEl);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMenuAnchorEl(null);
-  };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
-    handleMobileMenuClose();
-  };
-
-  const handleMobileMenuOpen = (event) => {
-    setMobileMenuAnchorEl(event.currentTarget);
   };
 
   const handleDrawerToggle = () => {
@@ -128,7 +104,6 @@ const Header = () => {
     navigate('/');
   };
 
-  // Menu for user account
   const renderMenu = (
     <Menu
       anchorEl={anchorEl}
@@ -145,70 +120,30 @@ const Header = () => {
       onClose={handleMenuClose}
     >
       {isAuthenticated ? (
-        [
-          <MenuItem key="profile" onClick={() => { handleMenuClose(); navigate('/profile'); }}>
+        <>
+          <MenuItem onClick={() => { handleMenuClose(); navigate('/profile'); }}>
             Profile
-          </MenuItem>,
-          <MenuItem key="orders" onClick={() => { handleMenuClose(); navigate('/orders'); }}>
-            Orders
-          </MenuItem>,
-          <MenuItem key="logout" onClick={handleLogout}>
+          </MenuItem>
+          <MenuItem onClick={() => { handleMenuClose(); navigate('/orders'); }}>
+            My Orders
+          </MenuItem>
+          <MenuItem onClick={handleLogout}>
             Logout
           </MenuItem>
-        ]
+        </>
       ) : (
-        [
-          <MenuItem key="login" onClick={() => { handleMenuClose(); navigate('/login'); }}>
+        <>
+          <MenuItem onClick={() => { handleMenuClose(); navigate('/login'); }}>
             Login
-          </MenuItem>,
-          <MenuItem key="register" onClick={() => { handleMenuClose(); navigate('/register'); }}>
+          </MenuItem>
+          <MenuItem onClick={() => { handleMenuClose(); navigate('/register'); }}>
             Register
           </MenuItem>
-        ]
+        </>
       )}
     </Menu>
   );
 
-  // Mobile menu
-  const renderMobileMenu = (
-    <Menu
-      anchorEl={mobileMenuAnchorEl}
-      anchorOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-      keepMounted
-      transformOrigin={{
-        vertical: 'top',
-        horizontal: 'right',
-      }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
-    >
-      <MenuItem onClick={() => { handleMobileMenuClose(); navigate('/cart'); }}>
-        <IconButton size="large" color="inherit">
-          <Badge badgeContent={cartItemCount} color="error">
-            <ShoppingCart />
-          </Badge>
-        </IconButton>
-        <p>Cart</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
-        >
-          <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
-    </Menu>
-  );
-
-  // Side drawer for categories
   const drawer = (
     <Box sx={{ width: 250 }} role="presentation" onClick={handleDrawerToggle}>
       <List>
@@ -230,10 +165,9 @@ const Header = () => {
         <ListItem>
           <ListItemText primary="Categories" primaryTypographyProps={{ fontWeight: 'bold' }} />
         </ListItem>
-        {/* Category list would be dynamically generated from API */}
         {['Electronics', 'Jewelry', "Men's Clothing", "Women's Clothing"].map((text) => (
-          <ListItem 
-            button 
+          <ListItem
+            button
             key={text}
             component={RouterLink}
             to={`/products?category=${encodeURIComponent(text.toLowerCase())}`}
@@ -247,52 +181,93 @@ const Header = () => {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            sx={{ mr: 2 }}
-            onClick={handleDrawerToggle}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component={RouterLink}
-            to="/"
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              textDecoration: 'none',
-              color: 'inherit',
-            }}
-          >
-            ShopSmart
-          </Typography>
-          <form onSubmit={handleSearchSubmit}>
+      <AppBar
+        position="static"
+        sx={{
+          backgroundColor: '#131921', // Amazon dark gray
+          color: '#fff',
+          minHeight: '60px',
+        }}
+      >
+        <Toolbar sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Left side - Menu + Logo */}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="open drawer"
+              sx={{ mr: 2 }}
+              onClick={handleDrawerToggle}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Typography
+              variant="h6"
+              noWrap
+              component={RouterLink}
+              to="/"
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+                textDecoration: 'none',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '20px',
+              }}
+            >
+              ShopSmart
+            </Typography>
+          </Box>
+
+          {/* Center - Search bar */}
+          <form onSubmit={handleSearchSubmit} style={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
             <Search>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
               <StyledInputBase
-                placeholder="Search…"
+                placeholder="Search for products, brands and more…"
                 inputProps={{ 'aria-label': 'search' }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </Search>
           </form>
-          <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-            <Button color="inherit" component={RouterLink} to="/products">
+
+          {/* Right side - Links */}
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/products"
+              sx={{
+                fontWeight: 'normal',
+                textTransform: 'none',
+                fontSize: '14px',
+                color: '#fff',
+                '&.active': { color: '#fff' }, // prevent blue
+              }}
+            >
               Products
             </Button>
+            {isAuthenticated && (
+              <Button
+                color="inherit"
+                component={RouterLink}
+                to="/orders"
+                sx={{
+                  fontWeight: 'normal',
+                  textTransform: 'none',
+                  fontSize: '14px',
+                  color: '#fff',
+                  '&.active': { color: '#fff' }, // prevent blue
+                }}
+              >
+                Returns & Orders
+              </Button>
+            )}
             <IconButton
               size="large"
-              aria-label="show cart items"
               color="inherit"
               component={RouterLink}
               to="/cart"
@@ -304,30 +279,25 @@ const Header = () => {
             <IconButton
               size="large"
               edge="end"
-              aria-label="account of current user"
-              aria-controls="primary-search-account-menu"
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
               color="inherit"
+              onClick={handleProfileMenuOpen}
             >
               <AccountCircle />
             </IconButton>
           </Box>
+
+          {/* Mobile view - Account icon only */}
           <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
             <IconButton
               size="large"
-              aria-label="show more"
-              aria-controls="primary-search-account-menu-mobile"
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
               color="inherit"
+              onClick={handleProfileMenuOpen}
             >
-              <MenuIcon />
+              <AccountCircle />
             </IconButton>
           </Box>
         </Toolbar>
       </AppBar>
-      {renderMobileMenu}
       {renderMenu}
       <Drawer
         anchor="left"
