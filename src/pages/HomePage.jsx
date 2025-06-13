@@ -25,10 +25,10 @@ const HomePage = () => {
   
   // Featured categories - in a real app, these might come from an API
   const categories = [
-    { id: 1, name: "Electronics", image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg" },
-    { id: 2, name: "Jewelry", image: "https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_.jpg" },
-    { id: 3, name: "Men's Clothing", image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg" },
-    { id: 4, name: "Women's Clothing", image: "https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg" },
+    { id: 1, name: "electronics", image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg" },
+    { id: 2, name: "jewelery", image: "https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_.jpg" },
+    { id: 3, name: "men's clothing", image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg" },
+    { id: 4, name: "women's clothing", image: "https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg" },
   ];
   
   return (
@@ -206,7 +206,7 @@ const HomePage = () => {
             >
               <Card
                 component={RouterLink}
-                to={`/products?category=${encodeURIComponent(category.name.toLowerCase())}`}
+                to={`/products?category=${encodeURIComponent(category.name)}`}
                 sx={{
                   width: '100%',
                   display: 'flex',
@@ -278,7 +278,7 @@ const HomePage = () => {
                       fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
                     }}
                   >
-                    {category.name}
+                    {category.name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                   </Typography>
                   <Typography 
                     variant="body2" 

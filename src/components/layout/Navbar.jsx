@@ -18,7 +18,7 @@ const Navbar = () => {
     setAnchorEl(null);
   };
 
-  const categories = ['Electronics', 'Jewelry', "Men's Clothing", "Women's Clothing"];
+  const categories = ['electronics', 'jewelery', "men's clothing", "women's clothing"];
 
   const navLinkStyle = ({ isActive }) => ({
     fontWeight: 'bold',
@@ -81,10 +81,10 @@ const Navbar = () => {
                   key={category}
                   onClick={() => {
                     handleMenuClose();
-                    navigate(`/products?category=${encodeURIComponent(category.toLowerCase())}`);
+                    navigate(`/products?category=${encodeURIComponent(category)}`);
                   }}
                 >
-                  {category}
+                  {category.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                 </MenuItem>
               ))}
             </Menu>
