@@ -1,85 +1,117 @@
-import { Box, Container, Grid, Typography, Link, IconButton } from '@mui/material';
-import { Facebook, Twitter, Instagram, LinkedIn, GitHub } from '@mui/icons-material';
+// src/components/layout/Footer.jsx
+import React from 'react';
+import { useSelector } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { Box, Container, Typography, Grid, Link } from '@mui/material';
 
-/**
- * Footer component with links and social media icons
- */
 const Footer = () => {
+  const { user, token } = useSelector(state => state.user);
+  const isAuthenticated = Boolean(user && token);
+
+  const linkStyle = {
+    textDecoration: 'none',
+    color: '#ddd',
+    fontSize: '15px',
+    '&:hover': {
+      color: '#fff',
+      textDecoration: 'underline', // Optional: looks nice on hover (Amazon style)
+    },
+  };
+
   return (
     <Box
-      component="footer"
       sx={{
-        py: 3,
-        px: 2,
-        mt: 'auto',
-        backgroundColor: (theme) => theme.palette.grey[900],
-        color: 'white',
+        backgroundColor: '#232F3E', // Amazon-like dark footer
+        mt: 5,
+        py: 5,
       }}
     >
       <Container maxWidth="lg">
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="white" gutterBottom>
+        <Grid container spacing={4} justifyContent="space-between">
+          {/* Shop Links */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#fff' }}>
               ShopSmart
             </Typography>
-            <Typography variant="body2" color="white">
-              Your one-stop shop for all your shopping needs.
-              Quality products, competitive prices, and excellent service.
-            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link component={NavLink} to="/" sx={linkStyle}>
+                Home
+              </Link>
+              <Link component={NavLink} to="/products" sx={linkStyle}>
+                All Products
+              </Link>
+              <Link component={NavLink} to="/best-sellers" sx={linkStyle}>
+                Best Sellers
+              </Link>
+              <Link component={NavLink} to="/new-items" sx={linkStyle}>
+                New Items
+              </Link>
+              <Link component={NavLink} to="/products?category=electronics" sx={linkStyle}>
+                Categories
+              </Link>
+            </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="white" gutterBottom>
-              Quick Links
+
+          {/* Company Info */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#fff' }}>
+              Company
             </Typography>
-            <Link href="/" color="inherit" display="block" sx={{ mb: 1 }}>
-              Home
-            </Link>
-            <Link href="/products" color="inherit" display="block" sx={{ mb: 1 }}>
-              Products
-            </Link>
-            <Link href="/cart" color="inherit" display="block" sx={{ mb: 1 }}>
-              Cart
-            </Link>
-            <Link href="/login" color="inherit" display="block" sx={{ mb: 1 }}>
-              Login
-            </Link>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link component={NavLink} to="/about" sx={linkStyle}>
+                About
+              </Link>
+              <Link component={NavLink} to="/contact" sx={linkStyle}>
+                Contact
+              </Link>
+              <Link component={NavLink} to="/help" sx={linkStyle}>
+                Help
+              </Link>
+              {isAuthenticated && (
+                <Link component={NavLink} to="/orders" sx={linkStyle}>
+                  My Orders
+                </Link>
+              )}
+            </Box>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Typography variant="h6" color="white" gutterBottom>
-              Contact Us
+
+          {/* Customer Service */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', color: '#fff' }}>
+              Customer Service
             </Typography>
-            <Typography variant="body2" color="white" paragraph>
-              Email: info@shopsmart.com
-            </Typography>
-            <Typography variant="body2" color="white" paragraph>
-              Phone: +1 (123) 456-7890
-            </Typography>
-            <Box>
-              <IconButton color="inherit" aria-label="Facebook">
-                <Facebook />
-              </IconButton>
-              <IconButton color="inherit" aria-label="Twitter">
-                <Twitter />
-              </IconButton>
-              <IconButton color="inherit" aria-label="Instagram">
-                <Instagram />
-              </IconButton>
-              <IconButton color="inherit" aria-label="LinkedIn">
-                <LinkedIn />
-              </IconButton>
-              <IconButton color="inherit" aria-label="GitHub">
-                <GitHub />
-              </IconButton>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Link component={NavLink} to="/return-refund-policy" sx={linkStyle}>
+                Return and Refund Policy
+              </Link>
+              <Link component={NavLink} to="/intellectual-property-policy" sx={linkStyle}>
+                Intellectual Property Policy
+              </Link>
+              <Link component={NavLink} to="/shipping-info" sx={linkStyle}>
+                Shipping Info
+              </Link>
+              <Link component={NavLink} to="/report-suspicious-activity" sx={linkStyle}>
+                Report Suspicious Activity
+              </Link>
+            </Box>
+          </Grid>
+
+          {/* Branding */}
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                mt: 4,
+                borderTop: '1px solid #3A4553',
+                pt: 2,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant="body2" sx={{ color: '#aaa' }}>
+                © {new Date().getFullYear()} ShopSmart. All rights reserved.
+              </Typography>
             </Box>
           </Grid>
         </Grid>
-        <Box mt={3}>
-          <Typography variant="body2" color="white" align="center">
-            {'© '}
-            {new Date().getFullYear()}
-            {' ShopSmart. All rights reserved.'}
-          </Typography>
-        </Box>
       </Container>
     </Box>
   );
