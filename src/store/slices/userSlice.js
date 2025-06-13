@@ -6,7 +6,22 @@ const loadUserFromStorage = () => {
   try {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
-    return userData && token ? { user: JSON.parse(userData), token } : { user: null, token: null };
+    if (userData && token) {
+      const parsedUser = JSON.parse(userData);
+      return { 
+        user: {
+          id: parsedUser.id,
+          username: parsedUser.username,
+          email: parsedUser.email,
+          name: parsedUser.name,
+          phone: parsedUser.phone,
+          address: parsedUser.address,
+          password: parsedUser.password,
+        }, 
+        token 
+      };
+    }
+    return { user: null, token: null };
   } catch (error) {
     console.error('Error loading user data from localStorage:', error);
     return { user: null, token: null };
@@ -25,14 +40,23 @@ const userSlice = createSlice({
   reducers: {
     setCredentials: (state, action) => {
       const { user, token } = action.payload;
-      state.user = user;
+      // Ensure we store the complete user object
+      state.user = {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        address: user.address,
+        password: user.password,
+      };
       state.token = token;
       state.status = 'succeeded';
       state.error = null;
       
-      // Save to localStorage
+      // Save complete user data to localStorage
       try {
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('user', JSON.stringify(state.user));
         localStorage.setItem('token', token);
       } catch (error) {
         console.error('Error saving user data to localStorage:', error);
@@ -48,8 +72,18 @@ const userSlice = createSlice({
       localStorage.removeItem('token');
     },
     updateUserProfile: (state, action) => {
-      state.user = { ...state.user, ...action.payload };
-      // Update localStorage
+      // Store the complete user data
+      state.user = {
+        id: action.payload.id,
+        username: action.payload.username,
+        email: action.payload.email,
+        name: action.payload.name,
+        phone: action.payload.phone,
+        address: action.payload.address,
+        password: action.payload.password,
+      };
+      
+      // Update localStorage with the complete user object
       try {
         localStorage.setItem('user', JSON.stringify(state.user));
       } catch (error) {

@@ -119,10 +119,41 @@ const ProfilePage = () => {
           zipcode: formData.zipcode,
           geolocation: userProfile?.address?.geolocation || { lat: '', long: '' },
         },
+        password: currentUser.password, // Preserve the password
       };
 
       const result = await updateUser(updatedUser).unwrap();
-      dispatch(updateUserProfile(result));
+      
+      // Create a complete user object for Redux store
+      const completeUserData = {
+        ...currentUser,
+        ...result,
+        name: {
+          ...currentUser.name,
+          ...result.name,
+        },
+        address: {
+          ...currentUser.address,
+          ...result.address,
+        },
+      };
+      
+      // Update Redux store with complete user data
+      dispatch(updateUserProfile(completeUserData));
+      
+      // Update local form data to reflect changes
+      setFormData({
+        email: result.email,
+        username: result.username,
+        firstname: result.name.firstname,
+        lastname: result.name.lastname,
+        phone: result.phone,
+        city: result.address.city,
+        street: result.address.street,
+        number: result.address.number,
+        zipcode: result.address.zipcode,
+      });
+      
       setIsEditing(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
