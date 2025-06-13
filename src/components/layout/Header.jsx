@@ -31,7 +31,7 @@ import {
 } from '@mui/icons-material';
 import { logout } from '../../store/slices/userSlice';
 
-// Styled components for search bar (Amazon style)
+// Styled components for search bar
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: '4px',
@@ -182,11 +182,12 @@ const Header = () => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar
-        position="static"
+        position="fixed"
         sx={{
-          backgroundColor: '#131921', // Amazon dark gray
+          backgroundColor: '#131921',
           color: '#fff',
           minHeight: '60px',
+          zIndex: (theme) => theme.zIndex.appBar + 2, // ensure header is on top
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
@@ -245,7 +246,6 @@ const Header = () => {
                 textTransform: 'none',
                 fontSize: '14px',
                 color: '#fff',
-                '&.active': { color: '#fff' }, // prevent blue
               }}
             >
               Products
@@ -260,7 +260,6 @@ const Header = () => {
                   textTransform: 'none',
                   fontSize: '14px',
                   color: '#fff',
-                  '&.active': { color: '#fff' }, // prevent blue
                 }}
               >
                 Returns & Orders
