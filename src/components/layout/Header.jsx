@@ -1,5 +1,5 @@
 // src/components/layout/Header.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -19,6 +19,10 @@ import {
   ListItemText,
   ListItemIcon,
   Divider,
+  CircularProgress,
+  Popper,
+  Paper,
+  ClickAwayListener,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import {
@@ -30,6 +34,7 @@ import {
   Category,
 } from '@mui/icons-material';
 import { logout } from '../../store/slices/userSlice';
+import { useGetProductsQuery } from '../../store/api/productApi';
 
 // Styled components for search bar
 const Search = styled('div')(({ theme }) => ({
@@ -71,12 +76,23 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchAnchorEl, setSearchAnchorEl] = useState(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const cartItemCount = useSelector(state => state.cart?.items?.length || 0);
   const { user, token } = useSelector(state => state.user);
   const isAuthenticated = Boolean(user && token);
 
+  // Fetch products for search suggestions
+  const { data: products, isLoading } = useGetProductsQuery();
+
   const isMenuOpen = Boolean(anchorEl);
+
+  // Filter products based on search query
+  const filteredProducts = products?.filter(product => 
+    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.description.toLowerCase().includes(searchQuery.toLowerCase())
+  ).slice(0, 5) || [];
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -90,12 +106,38 @@ const Header = () => {
     setDrawerOpen(!drawerOpen);
   };
 
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setShowSuggestions(true);
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
+      setShowSuggestions(false);
     }
+  };
+
+  const handleSuggestionClick = (product) => {
+    navigate(`/products/${product.id}`);
+    setSearchQuery('');
+    setShowSuggestions(false);
+  };
+
+  const handleSearchFocus = () => {
+    if (searchQuery.trim()) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSearchBlur = () => {
+    // Delay hiding suggestions to allow for clicks
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
   };
 
   const handleLogout = () => {
@@ -221,19 +263,95 @@ const Header = () => {
           </Box>
 
           {/* Center - Search bar */}
-          <form onSubmit={handleSearchSubmit} style={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search for products, brands and more…"
-                inputProps={{ 'aria-label': 'search' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </Search>
-          </form>
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', position: 'relative' }}>
+            <form onSubmit={handleSearchSubmit} style={{ width: '100%', maxWidth: '600px' }}>
+              <Search>
+                <SearchIconWrapper>
+                  {isLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <SearchIcon />
+                  )}
+                </SearchIconWrapper>
+                <StyledInputBase
+                  placeholder="Search for products, brands and more…"
+                  inputProps={{ 'aria-label': 'search' }}
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  onFocus={handleSearchFocus}
+                  onBlur={handleSearchBlur}
+                />
+              </Search>
+            </form>
+
+            {/* Search Suggestions */}
+            {showSuggestions && searchQuery.trim() && (
+              <Paper
+                sx={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '100%',
+                  maxWidth: '600px',
+                  mt: 1,
+                  zIndex: 1,
+                  maxHeight: '400px',
+                  overflow: 'auto',
+                }}
+              >
+                {isLoading ? (
+                  <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <CircularProgress size={20} />
+                  </Box>
+                ) : filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <Box
+                      key={product.id}
+                      onClick={() => handleSuggestionClick(product)}
+                      sx={{
+                        p: 2,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        '&:hover': {
+                          bgcolor: 'action.hover',
+                        },
+                        borderBottom: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src={product.image}
+                        alt={product.title}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          objectFit: 'contain',
+                        }}
+                      />
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                          {product.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ${product.price}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="text.secondary">
+                      No products found
+                    </Typography>
+                  </Box>
+                )}
+              </Paper>
+            )}
+          </Box>
 
           {/* Right side - Links */}
           <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
