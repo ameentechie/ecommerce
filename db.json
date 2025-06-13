@@ -49,10 +49,70 @@
       "price": 999.99,
       "description": "High-performance laptop with latest features",
       "category": "electronics",
-      "image": "https://via.placeholder.com/300",
+      "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?q=80&w=1000&auto=format&fit=crop",
       "rating": {
         "rate": 4.5,
         "count": 120
+      }
+    },
+    {
+      "id": "2",
+      "title": "Wireless Headphones",
+      "price": 199.99,
+      "description": "Premium noise-cancelling wireless headphones",
+      "category": "electronics",
+      "image": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop",
+      "rating": {
+        "rate": 4.8,
+        "count": 85
+      }
+    },
+    {
+      "id": "3",
+      "title": "Smart Watch",
+      "price": 299.99,
+      "description": "Feature-rich smartwatch with health tracking",
+      "category": "electronics",
+      "image": "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?q=80&w=1000&auto=format&fit=crop",
+      "rating": {
+        "rate": 4.3,
+        "count": 65
+      }
+    },
+    {
+      "id": "4",
+      "title": "Gaming Console",
+      "price": 499.99,
+      "description": "Next-gen gaming console with 4K support",
+      "category": "electronics",
+      "image": "https://images.unsplash.com/photo-1486401899868-0e435ed85128?q=80&w=1000&auto=format&fit=crop",
+      "rating": {
+        "rate": 4.7,
+        "count": 150
+      }
+    },
+    {
+      "id": "5",
+      "title": "Bluetooth Speaker",
+      "price": 89.99,
+      "description": "Portable Bluetooth speaker with deep bass and long battery life.",
+      "category": "electronics",
+      "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtd4AtB3SKSPBwsoTjZDET4d0TievTO3hMcBpAENmQ_OiUAKG6jcyqb1BuZZ6SkFaYMKE&usqp=CAU",
+      "rating": {
+        "rate": 4.6,
+        "count": 90
+      }
+    },
+    {
+      "id": "6",
+      "title": "DSLR Camera",
+      "price": 599.99,
+      "description": "High-resolution DSLR camera for professional photography.",
+      "category": "electronics",
+      "image": "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?q=80&w=1000&auto=format&fit=crop",
+      "rating": {
+        "rate": 4.9,
+        "count": 60
       }
     }
   ],
