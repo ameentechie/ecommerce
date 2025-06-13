@@ -1,5 +1,5 @@
 // src/components/layout/Header.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -84,16 +84,29 @@ const Header = () => {
   const token = useSelector(selectCurrentToken);
   const isAuthenticated = Boolean(user && token);
 
-  // Fetch products for search suggestions
-  const { data: products, isLoading } = useGetProductsQuery();
+  // Fetch products for search suggestions - using same pattern as products page
+  const { data: products, isLoading, error } = useGetProductsQuery({});
 
   const isMenuOpen = Boolean(anchorEl);
 
-  // Filter products based on search query
-  const filteredProducts = products?.filter(product => 
-    product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchQuery.toLowerCase())
-  ).slice(0, 5) || [];
+  // Improved case-insensitive filtering with better matching
+  const filteredProducts = React.useMemo(() => {
+    if (!products || !searchQuery.trim()) return [];
+    
+    const query = searchQuery.toLowerCase().trim();
+    
+    const filtered = products.filter(product => {
+      const title = product.title?.toLowerCase() || '';
+      const description = product.description?.toLowerCase() || '';
+      const category = product.category?.toLowerCase() || '';
+      
+      return title.includes(query) || 
+             description.includes(query) || 
+             category.includes(query);
+    }).slice(0, 5);
+
+    return filtered;
+  }, [products, searchQuery]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -110,13 +123,13 @@ const Header = () => {
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setShowSuggestions(true);
+    setShowSuggestions(query.trim().length > 0);
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
       setShowSuggestions(false);
     }
@@ -208,14 +221,14 @@ const Header = () => {
         <ListItem>
           <ListItemText primary="Categories" primaryTypographyProps={{ fontWeight: 'bold' }} />
         </ListItem>
-        {['Electronics', 'Jewelry', "Men's Clothing", "Women's Clothing"].map((text) => (
+        {['electronics', 'jewelery', "men's clothing", "women's clothing"].map((text) => (
           <ListItem
             button
             key={text}
             component={RouterLink}
-            to={`/products?category=${encodeURIComponent(text.toLowerCase())}`}
+            to={`/products?category=${encodeURIComponent(text)}`}
           >
-            <ListItemText primary={text} />
+            <ListItemText primary={text.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} />
           </ListItem>
         ))}
       </List>
@@ -304,49 +317,68 @@ const Header = () => {
                 {isLoading ? (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <CircularProgress size={20} />
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Searching products...
+                    </Typography>
+                  </Box>
+                ) : error ? (
+                  <Box sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="body2" color="error">
+                      Error loading products
+                    </Typography>
                   </Box>
                 ) : filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
-                    <Box
-                      key={product.id}
-                      onClick={() => handleSuggestionClick(product)}
-                      sx={{
-                        p: 2,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 2,
-                        '&:hover': {
-                          bgcolor: 'action.hover',
-                        },
-                        borderBottom: '1px solid',
-                        borderColor: 'divider',
-                      }}
-                    >
+                  <>
+                    {filteredProducts.map((product) => (
                       <Box
-                        component="img"
-                        src={product.image}
-                        alt={product.title}
+                        key={product.id}
+                        onClick={() => handleSuggestionClick(product)}
                         sx={{
-                          width: 40,
-                          height: 40,
-                          objectFit: 'contain',
+                          p: 2,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          '&:hover': {
+                            bgcolor: 'action.hover',
+                          },
+                          borderBottom: '1px solid',
+                          borderColor: 'divider',
                         }}
-                      />
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {product.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          ${product.price}
-                        </Typography>
+                      >
+                        <Box
+                          component="img"
+                          src={product.image}
+                          alt={product.title}
+                          sx={{
+                            width: 40,
+                            height: 40,
+                            objectFit: 'contain',
+                          }}
+                        />
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            {product.title}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            ${product.price} • {product.category}
+                          </Typography>
+                        </Box>
                       </Box>
+                    ))}
+                    <Box sx={{ p: 1, textAlign: 'center', bgcolor: 'action.hover' }}>
+                      <Typography variant="caption" color="text.secondary">
+                        Press Enter to see all results
+                      </Typography>
                     </Box>
-                  ))
+                  </>
                 ) : (
                   <Box sx={{ p: 2, textAlign: 'center' }}>
                     <Typography variant="body2" color="text.secondary">
-                      No products found
+                      No products found for "{searchQuery}"
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Try different keywords or browse categories
                     </Typography>
                   </Box>
                 )}

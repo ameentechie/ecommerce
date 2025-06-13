@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { userApi } from '../api/userApi';
+import { storageService } from '../../services/storageService';
 
 // Load initial state from localStorage
 const loadUserFromStorage = () => {
@@ -70,6 +71,9 @@ const userSlice = createSlice({
       // Clear localStorage
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      
+      // Clear cart and orders data on logout
+      storageService.clearAllData();
     },
     updateUserProfile: (state, action) => {
       // Store the complete user data

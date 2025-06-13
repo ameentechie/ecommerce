@@ -7,10 +7,13 @@ export const productApi = createApi({
   tagTypes: ['Products', 'Categories'],
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: ({ category, limit }) => ({
-        url: category ? `/products/category/${category}` : '/products',
-        params: limit ? { limit } : {},
-      }),
+      query: (params = {}) => {
+        const { category, limit } = params;
+        return {
+          url: category ? `/products/category/${category}` : '/products',
+          params: limit ? { limit } : {},
+        };
+      },
       providesTags: ['Products'],
     }),
     getProductById: builder.query({
