@@ -15,13 +15,15 @@ import {
 import { ShoppingBag, Favorite, LocalShipping, Support, WrapText } from '@mui/icons-material';
 import { useGetProductsQuery } from '../store/api/productApi';
 import ProductCard from '../components/products/ProductCard';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ProductSkeleton from '../components/common/ProductSkeleton';
 
 /**
  * HomePage component - Landing page for ShopSmart
  */
 const HomePage = () => {
   // Fetch featured products using RTK Query
-  const { data: products, isLoading } = useGetProductsQuery({ limit: 4, page: 1 });
+  const { data: products, isLoading, error } = useGetProductsQuery({ limit: 4, page: 1 });
   
   // Featured categories - in a real app, these might come from an API
   const categories = [
@@ -30,6 +32,80 @@ const HomePage = () => {
     { id: 3, name: "men's clothing", image: "https://fakestoreapi.com/img/71-3HjGNDUL._AC_SY879._SX._UX._SY._UY_.jpg" },
     { id: 4, name: "women's clothing", image: "https://fakestoreapi.com/img/51Y5NI-I5jL._AC_UX679_.jpg" },
   ];
+
+  // Render featured products section with loading states
+  const renderFeaturedProducts = () => {
+    if (isLoading) {
+      return (
+        <Box sx={{ mb: 4 }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 'bold',
+              mb: 1,
+              textAlign: 'center',
+              color: 'text.primary'
+            }}
+          >
+            Featured Products
+          </Typography>
+          <Typography 
+            variant="subtitle1" 
+            color="text.secondary"
+            sx={{ maxWidth: '600px', mx: 'auto', textAlign: 'center', mb: 4 }}
+          >
+            Loading our best products for you...
+          </Typography>
+          <ProductSkeleton count={4} showGrid />
+        </Box>
+      );
+    }
+
+    if (error) {
+      return (
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Typography variant="h6" color="error" gutterBottom>
+            Failed to load featured products
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Please try refreshing the page
+          </Typography>
+        </Box>
+      );
+    }
+
+    return (
+      <Box sx={{ mb: 4 }}>
+        <Typography 
+          variant="h4" 
+          component="h2" 
+          sx={{ 
+            fontWeight: 'bold',
+            mb: 1,
+            textAlign: 'center',
+            color: 'text.primary'
+          }}
+        >
+          Featured Products
+        </Typography>
+        <Typography 
+          variant="subtitle1" 
+          color="text.secondary"
+          sx={{ maxWidth: '600px', mx: 'auto', textAlign: 'center', mb: 4 }}
+        >
+          Discover our handpicked selection of trending items
+        </Typography>
+        <Grid container spacing={3}>
+          {products?.slice(0, 4).map((product) => (
+            <Grid item xs={12} sm={6} md={3} key={product.id}>
+              <ProductCard product={product} />
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    );
+  };
   
   return (
     <Box>
@@ -298,245 +374,7 @@ const HomePage = () => {
       </Container>
 
       {/* Featured Products */}
-      <Box sx={{ bgcolor: 'background.paper', py: 8, px: { xs: 2, sm: 3, md: 4 } }}>
-        <Container maxWidth="lg">
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              mb: 6,
-              flexDirection: { xs: 'column', sm: 'row' },
-              gap: { xs: 2, sm: 0 },
-              textAlign: { xs: 'center', sm: 'left' }
-            }}
-          >
-            <Box>
-              <Typography 
-                variant="h4" 
-                component="h2"
-                sx={{ 
-                  fontWeight: 'bold',
-                  mb: 1,
-                  color: 'text.primary'
-                }}
-              >
-                Featured Products
-              </Typography>
-              <Typography 
-                variant="subtitle1" 
-                color="text.secondary"
-                sx={{ maxWidth: '600px' }}
-              >
-                Discover our handpicked selection of premium products
-              </Typography>
-            </Box>
-            <Button 
-              component={RouterLink} 
-              to="/products" 
-              variant="outlined"
-              size="large"
-              sx={{ 
-                px: 4,
-                py: 1.5,
-                borderRadius: 2,
-                borderWidth: 2,
-                '&:hover': {
-                  borderWidth: 2,
-                  transform: 'translateY(-2px)',
-                  boxShadow: 4,
-                },
-                transition: 'all 0.2s',
-              }}
-            >
-              View All
-            </Button>
-          </Box>
-          <Grid container spacing={4} sx={{ mt: 2 }}>
-            {/* Left: Main Feature */}
-            <Grid item xs={12} md={6} lg={6}>
-              {isLoading || !products?.length ? (
-                <Box sx={{ height: { xs: 220, md: 350 }, borderRadius: 3, bgcolor: 'grey.200' }} />
-              ) : (
-                <Box
-                  sx={{
-                    height: { xs: 220, md: 350 },
-                    background: `url(${products[0].image}) center/cover`,
-                    borderRadius: 3,
-                    boxShadow: 3,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    p: 3,
-                    color: '#fff',
-                    position: 'relative',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.35)' }} />
-                  <Box sx={{ position: 'relative', zIndex: 1 }}>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      {products[0].title}
-                    </Typography>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                      {products[0].description}
-                    </Typography>
-                    <Button variant="contained" color="primary" component={RouterLink} to={`/products/${products[0].id}`}>
-                      Shop Now
-                    </Button>
-                  </Box>
-                </Box>
-              )}
-            </Grid>
-
-            {/* Right: 2x2 Grid of Products */}
-            <Grid item xs={12} md={6} lg={6}>
-              <Box 
-                sx={{ 
-                  border: '2px solid', 
-                  borderColor: 'divider', 
-                  borderRadius: 3, 
-                  p: 3, 
-                  bgcolor: 'background.paper',
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-start'
-                }}
-              >
-                <Box sx={{ mb: 3 }}>
-                  <Typography 
-                    variant="h5" 
-                    sx={{ 
-                      fontWeight: 'bold',
-                      mb: 2,
-                      color: 'text.primary'
-                    }}
-                  >
-                    Best of Electronics
-                  </Typography>
-                  <Typography 
-                    variant="subtitle1" 
-                    sx={{ 
-                      color: 'text.secondary',
-                      fontSize: '0.95rem'
-                    }}
-                  >
-                    Discover our curated selection of premium electronic devices
-                  </Typography>
-                </Box>
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                  {(() => {
-                    if (isLoading) {
-                      return Array.from(new Array(4)).map((_, idx) => (
-                        <Grid item xs={6} key={idx}>
-                          <Paper sx={{ height: 160 }} />
-                        </Grid>
-                      ));
-                    }
-                    
-                    if (!products?.length) return null;
-
-                    // Get first two products
-                    const firstTwo = products.slice(0, 2);
-                    
-                    // Find specific products
-                    const gamingConsole = products.find(p => 
-                      p.title.toLowerCase().includes('gaming console') || 
-                      p.title.toLowerCase().includes('console')
-                    );
-                    const bluetoothSpeaker = products.find(p => 
-                      p.title.toLowerCase().includes('bluetooth speaker') || 
-                      p.title.toLowerCase().includes('speaker')
-                    );
-
-                    // Create array with desired order
-                    const featured = [
-                      ...firstTwo,
-                      gamingConsole || products[2],
-                      bluetoothSpeaker || products[3]
-                    ].filter(Boolean);
-
-                    return featured.map((product, idx) => (
-                      <Grid item xs={6} key={product.id || idx}>
-                        <Paper
-                          sx={{
-                            p: 2,
-                            borderRadius: 2,
-                            boxShadow: 1,
-                            textAlign: 'center',
-                            height: 160,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            '&:hover': { 
-                              boxShadow: 4, 
-                              transform: 'translateY(-4px)',
-                              cursor: 'pointer',
-                              borderColor: 'primary.main',
-                              border: '1px solid',
-                            },
-                            transition: 'all 0.2s',
-                            position: 'relative',
-                            overflow: 'hidden',
-                          }}
-                          component={RouterLink}
-                          to={`/products/${product.id}`}
-                        >
-                          <Box
-                            component="img"
-                            src={product.image}
-                            alt={product.title}
-                            sx={{ 
-                              width: '100%', 
-                              height: 80, 
-                              objectFit: 'contain', 
-                              mb: 1,
-                              transition: 'transform 0.3s ease',
-                              '&:hover': {
-                                transform: 'scale(1.05)',
-                              }
-                            }}
-                          />
-                          <Box sx={{ width: '100%' }}>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ 
-                                fontWeight: 600, 
-                                fontSize: '0.9rem',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
-                                WebkitBoxOrient: 'vertical',
-                                mb: 0.5,
-                                color: 'text.primary'
-                              }}
-                            >
-                              {product.title}
-                            </Typography>
-                            <Typography 
-                              variant="body2" 
-                              sx={{ 
-                                color: '#1B5E20', // Dark green color
-                                fontWeight: 'bold',
-                                fontSize: '1rem'
-                              }}
-                            >
-                              ${product.price}
-                            </Typography>
-                          </Box>
-                        </Paper>
-                      </Grid>
-                    ));
-                  })()}
-                </Grid>
-              </Box>
-            </Grid>
-          </Grid>
-        </Container>
-      </Box>
+      {renderFeaturedProducts()}
 
       {/* Features Section */}
       <Container maxWidth="lg" sx={{ my: 8 }}>

@@ -299,8 +299,9 @@ const LoginPage = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
               disabled={isLoading}
+              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
             >
-              {isLoading ? <CircularProgress size={24} /> : 'Sign In'}
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </Button>
             
             <Button
@@ -309,8 +310,9 @@ const LoginPage = () => {
               sx={{ mb: 2 }}
               onClick={handleDemoLogin}
               disabled={isLoading}
+              startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
             >
-              Demo Login
+              {isLoading ? 'Loading Demo...' : 'Demo Login'}
             </Button>
             
             <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 2 }}>

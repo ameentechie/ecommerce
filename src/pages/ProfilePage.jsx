@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
   Container,
   Paper,
@@ -18,6 +19,9 @@ import {
   Card,
   CardContent,
   Collapse,
+  Chip,
+  IconButton,
+  Skeleton,
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -31,22 +35,29 @@ import {
   Cancel as CancelIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  AccountCircle,
+  Logout,
+  Security,
 } from '@mui/icons-material';
 import { useGetUserByIdQuery, useUpdateUserMutation } from '../store/api/userApi';
-import { updateUserProfile, selectCurrentUser } from '../store/slices/userSlice';
+import { updateUserProfile, selectCurrentUser, setCredentials, logout } from '../store/slices/userSlice';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const ProfilePage = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector(selectCurrentUser);
   const [isEditing, setIsEditing] = useState(false);
   const [formErrors, setFormErrors] = useState({});
   const [showAdditionalFields, setShowAdditionalFields] = useState(false);
   const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Get current user's full profile from API
   const { data: userProfile, isLoading: isLoadingProfile } = useGetUserByIdQuery(currentUser?.id);
-  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const [updateUser] = useUpdateUserMutation();
 
   // Initialize form data from localStorage or current user
   const [formData, setFormData] = useState({
@@ -63,32 +74,37 @@ const ProfilePage = () => {
 
   // Load user data from localStorage or current user on component mount
   useEffect(() => {
-    const loadUserData = () => {
-      // Try to load from localStorage first
-      const storedUser = localStorage.getItem('user');
-      let userData = currentUser;
-      
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          userData = parsedUser;
-        } catch (error) {
-          console.error('Error parsing stored user data:', error);
+    const loadUserData = async () => {
+      setIsLoading(true);
+      try {
+        // Try to load from localStorage first
+        const storedUser = localStorage.getItem('user');
+        let userData = currentUser;
+        
+        if (storedUser) {
+          try {
+            const parsedUser = JSON.parse(storedUser);
+            userData = parsedUser;
+          } catch (error) {
+            console.error('Error parsing stored user data:', error);
+          }
         }
-      }
 
-      if (userData) {
-        setFormData({
-          email: userData.email || '',
-          username: userData.username || '',
-          firstname: userData.name?.firstname || '',
-          lastname: userData.name?.lastname || '',
-          phone: userData.phone || '',
-          city: userData.address?.city || '',
-          street: userData.address?.street || '',
-          number: userData.address?.number || '',
-          zipcode: userData.address?.zipcode || '',
-        });
+        if (userData) {
+          setFormData({
+            email: userData.email || '',
+            username: userData.username || '',
+            firstname: userData.name?.firstname || '',
+            lastname: userData.name?.lastname || '',
+            phone: userData.phone || '',
+            city: userData.address?.city || '',
+            street: userData.address?.street || '',
+            number: userData.address?.number || '',
+            zipcode: userData.address?.zipcode || '',
+          });
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -142,6 +158,7 @@ const ProfilePage = () => {
       return;
     }
 
+    setIsSaving(true);
     try {
       const updatedUser = {
         id: currentUser.id,
@@ -214,6 +231,8 @@ const ProfilePage = () => {
       setFormErrors({
         submit: err.data?.message || 'Failed to update profile. Please try again.',
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -241,10 +260,64 @@ const ProfilePage = () => {
     setIsEditing(!isEditing);
   };
 
-  if (isLoadingProfile) {
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  if (isLoading) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-        <CircularProgress />
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+            <Skeleton variant="circular" width={80} height={80} sx={{ mr: 3 }} />
+            <Box sx={{ flex: 1 }}>
+              <Skeleton variant="text" width="60%" height={40} />
+              <Skeleton variant="text" width="40%" height={24} />
+            </Box>
+          </Box>
+          
+          <Divider sx={{ my: 3 }} />
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
+              <Skeleton variant="rectangular" height={56} />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Skeleton variant="rectangular" height={56} />
+            </Grid>
+            <Grid item xs={12}>
+              <Skeleton variant="rectangular" height={56} />
+            </Grid>
+          </Grid>
+          
+          <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+            <Skeleton variant="rectangular" width={120} height={40} />
+            <Skeleton variant="rectangular" width={100} height={40} />
+          </Box>
+        </Paper>
+      </Container>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <Container maxWidth="md" sx={{ py: 4 }}>
+        <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" color="error" gutterBottom>
+            No user data available
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Please log in to view your profile
+          </Typography>
+          <Button 
+            variant="contained" 
+            onClick={() => navigate('/login')}
+            sx={{ px: 4 }}
+          >
+            Go to Login
+          </Button>
+        </Paper>
       </Container>
     );
   }
@@ -268,210 +341,76 @@ const ProfilePage = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Fade in timeout={800}>
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4,
-            background: `linear-gradient(145deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-            borderRadius: 2,
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          {/* Decorative top border */}
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Fade in timeout={600}>
+        <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          {/* Header Section */}
           <Box
             sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              p: 4,
+              position: 'relative',
             }}
-          />
-
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            mb: 4,
-            position: 'relative',
-          }}>
-            <Avatar
-              sx={{
-                width: 100,
-                height: 100,
-                bgcolor: theme.palette.primary.main,
-                mr: 3,
-                boxShadow: 3,
-                border: `4px solid ${theme.palette.background.paper}`,
-              }}
-            >
-              <PersonIcon sx={{ fontSize: 50 }} />
-            </Avatar>
-            <Box>
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                gutterBottom
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Avatar
+                  sx={{
+                    width: 80,
+                    height: 80,
+                    bgcolor: 'rgba(255,255,255,0.2)',
+                    mr: 3,
+                    fontSize: '2rem'
+                  }}
+                >
+                  <PersonIcon fontSize="large" />
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {formData.firstname} {formData.lastname}
+                  </Typography>
+                  <Typography variant="body1" sx={{ opacity: 0.9 }}>
+                    {formData.email}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              <IconButton
+                onClick={handleLogout}
                 sx={{
-                  fontWeight: 600,
-                  background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                  backgroundClip: 'text',
-                  textFillColor: 'transparent',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: 'white',
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' }
                 }}
               >
-                {isEditing ? 'Edit Profile' : 'My Profile'}
-              </Typography>
-              <Typography 
-                variant="subtitle1" 
-                color="text.secondary"
-                sx={{ opacity: 0.8 }}
-              >
-                {isEditing ? 'Update your personal information' : 'View your profile information'}
-              </Typography>
+                <Logout />
+              </IconButton>
             </Box>
           </Box>
 
-          {/* Success Message */}
-          {updateSuccess && (
-            <Fade in>
-              <Alert 
-                severity="success" 
-                sx={{ 
-                  mb: 3,
-                  borderRadius: 2,
-                  boxShadow: 1,
-                }}
-              >
-                Profile updated successfully! Changes have been saved.
-              </Alert>
-            </Fade>
-          )}
+          {/* Content Section */}
+          <Box sx={{ p: 4 }}>
+            {/* Success Message */}
+            {updateSuccess && (
+              <Fade in>
+                <Alert severity="success" sx={{ mb: 3 }}>
+                  Profile updated successfully! Changes have been saved.
+                </Alert>
+              </Fade>
+            )}
 
-          {/* Error Message */}
-          {formErrors.submit && (
-            <Fade in>
-              <Alert 
-                severity="error" 
-                sx={{ 
-                  mb: 3,
-                  borderRadius: 2,
-                  boxShadow: 1,
-                }}
-              >
+            {/* Error Message */}
+            {formErrors.submit && (
+              <Alert severity="error" sx={{ mb: 3 }}>
                 {formErrors.submit}
               </Alert>
-            </Fade>
-          )}
+            )}
 
-          <form onSubmit={handleSubmit}>
-            <Grid container spacing={3}>
-              {/* Basic Information Card - Always Visible */}
-              <Grid item xs={12}>
-                <Card 
-                  elevation={2}
-                  sx={{ 
-                    mb: 3,
-                    background: theme.palette.background.paper,
-                    borderRadius: 2,
-                    transition: 'transform 0.2s ease-in-out',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Typography 
-                      variant="h6" 
-                      gutterBottom 
-                      sx={{ 
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        color: theme.palette.primary.main,
-                      }}
-                    >
-                      <PersonIcon /> Basic Information
-                    </Typography>
-                    <Divider sx={{ mb: 3 }} />
-                    
-                    <Grid container spacing={3}>
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="First Name"
-                          name="firstname"
-                          value={formData.firstname}
-                          onChange={handleChange}
-                          disabled={!isEditing}
-                          error={!!formErrors.firstname}
-                          helperText={formErrors.firstname}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <PersonIcon color={isEditing ? "primary" : "disabled"} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={textFieldStyles}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12} sm={6}>
-                        <TextField
-                          fullWidth
-                          label="Last Name"
-                          name="lastname"
-                          value={formData.lastname}
-                          onChange={handleChange}
-                          disabled={!isEditing}
-                          error={!!formErrors.lastname}
-                          helperText={formErrors.lastname}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <PersonIcon color={isEditing ? "primary" : "disabled"} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={textFieldStyles}
-                        />
-                      </Grid>
-
-                      <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          label="Email"
-                          name="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={handleChange}
-                          disabled={!isEditing}
-                          error={!!formErrors.email}
-                          helperText={formErrors.email}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <EmailIcon color={isEditing ? "primary" : "disabled"} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          sx={textFieldStyles}
-                        />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              {/* Additional Information - Collapsible */}
-              <Grid item xs={12}>
-                <Collapse in={showAdditionalFields}>
-                  {/* Contact Information Card */}
+            <form onSubmit={handleSubmit}>
+              <Grid container spacing={3}>
+                {/* Basic Information Card - Always Visible */}
+                <Grid item xs={12}>
                   <Card 
                     elevation={2}
                     sx={{ 
@@ -495,7 +434,7 @@ const ProfilePage = () => {
                           color: theme.palette.primary.main,
                         }}
                       >
-                        <PhoneIcon /> Contact Information
+                        <PersonIcon /> Basic Information
                       </Typography>
                       <Divider sx={{ mb: 3 }} />
                       
@@ -503,11 +442,13 @@ const ProfilePage = () => {
                         <Grid item xs={12} sm={6}>
                           <TextField
                             fullWidth
-                            label="Username"
-                            name="username"
-                            value={formData.username}
+                            label="First Name"
+                            name="firstname"
+                            value={formData.firstname}
                             onChange={handleChange}
-                            disabled={!isEditing}
+                            disabled={!isEditing || isSaving}
+                            error={!!formErrors.firstname}
+                            helperText={formErrors.firstname}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
@@ -522,17 +463,39 @@ const ProfilePage = () => {
                         <Grid item xs={12} sm={6}>
                           <TextField
                             fullWidth
-                            label="Phone"
-                            name="phone"
-                            value={formData.phone}
+                            label="Last Name"
+                            name="lastname"
+                            value={formData.lastname}
                             onChange={handleChange}
-                            disabled={!isEditing}
-                            error={!!formErrors.phone}
-                            helperText={formErrors.phone}
+                            disabled={!isEditing || isSaving}
+                            error={!!formErrors.lastname}
+                            helperText={formErrors.lastname}
                             InputProps={{
                               startAdornment: (
                                 <InputAdornment position="start">
-                                  <PhoneIcon color={isEditing ? "primary" : "disabled"} />
+                                  <PersonIcon color={isEditing ? "primary" : "disabled"} />
+                                </InputAdornment>
+                              ),
+                            }}
+                            sx={textFieldStyles}
+                          />
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            disabled={!isEditing || isSaving}
+                            error={!!formErrors.email}
+                            helperText={formErrors.email}
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <EmailIcon color={isEditing ? "primary" : "disabled"} />
                                 </InputAdornment>
                               ),
                             }}
@@ -542,166 +505,261 @@ const ProfilePage = () => {
                       </Grid>
                     </CardContent>
                   </Card>
+                </Grid>
 
-                  {/* Address Information Card */}
-                  <Card 
-                    elevation={2}
-                    sx={{ 
-                      mb: 3,
-                      background: theme.palette.background.paper,
-                      borderRadius: 2,
-                      transition: 'transform 0.2s ease-in-out',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                      },
-                    }}
-                  >
-                    <CardContent>
-                      <Typography 
-                        variant="h6" 
-                        gutterBottom 
-                        sx={{ 
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
+                {/* Additional Information - Collapsible */}
+                <Grid item xs={12}>
+                  <Collapse in={showAdditionalFields}>
+                    {/* Contact Information Card */}
+                    <Card 
+                      elevation={2}
+                      sx={{ 
+                        mb: 3,
+                        background: theme.palette.background.paper,
+                        borderRadius: 2,
+                        transition: 'transform 0.2s ease-in-out',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                        },
+                      }}
+                    >
+                      <CardContent>
+                        <Typography 
+                          variant="h6" 
+                          gutterBottom 
+                          sx={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            color: theme.palette.primary.main,
+                          }}
+                        >
+                          <PhoneIcon /> Contact Information
+                        </Typography>
+                        <Divider sx={{ mb: 3 }} />
+                        
+                        <Grid container spacing={3}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Username"
+                              name="username"
+                              value={formData.username}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <PersonIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Phone"
+                              name="phone"
+                              value={formData.phone}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              error={!!formErrors.phone}
+                              helperText={formErrors.phone}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <PhoneIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+
+                    {/* Address Information Card */}
+                    <Card 
+                      elevation={2}
+                      sx={{ 
+                        mb: 3,
+                        background: theme.palette.background.paper,
+                        borderRadius: 2,
+                        transition: 'transform 0.2s ease-in-out',
+                        '&:hover': {
+                          transform: 'translateY(-4px)',
+                        },
+                      }}
+                    >
+                      <CardContent>
+                        <Typography 
+                          variant="h6" 
+                          gutterBottom 
+                          sx={{ 
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            color: theme.palette.primary.main,
+                          }}
+                        >
+                          <LocationCityIcon /> Address Information
+                        </Typography>
+                        <Divider sx={{ mb: 3 }} />
+
+                        <Grid container spacing={3}>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Street"
+                              name="street"
+                              value={formData.street}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <HomeIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Street Number"
+                              name="number"
+                              value={formData.number}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              type="number"
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <HomeIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="City"
+                              name="city"
+                              value={formData.city}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <LocationCityIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="ZIP Code"
+                              name="zipcode"
+                              value={formData.zipcode}
+                              onChange={handleChange}
+                              disabled={!isEditing || isSaving}
+                              InputProps={{
+                                startAdornment: (
+                                  <InputAdornment position="start">
+                                    <LocationOnIcon color={isEditing ? "primary" : "disabled"} />
+                                  </InputAdornment>
+                                ),
+                              }}
+                              sx={textFieldStyles}
+                            />
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  </Collapse>
+                </Grid>
+
+                {/* Action Buttons */}
+                <Grid item xs={12}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 2, 
+                    mt: 2 
+                  }}>
+                    {/* Show/Hide Additional Fields Button - Only when not editing */}
+                    {!isEditing && (
+                      <Button
+                        variant="text"
+                        onClick={() => setShowAdditionalFields(!showAdditionalFields)}
+                        startIcon={showAdditionalFields ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        sx={{
+                          textTransform: 'none',
                           color: theme.palette.primary.main,
                         }}
                       >
-                        <LocationCityIcon /> Address Information
-                      </Typography>
-                      <Divider sx={{ mb: 3 }} />
+                        {showAdditionalFields ? 'Hide Additional Info' : 'Show Additional Info'}
+                      </Button>
+                    )}
 
-                      <Grid container spacing={3}>
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Street"
-                            name="street"
-                            value={formData.street}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <HomeIcon color={isEditing ? "primary" : "disabled"} />
-                                </InputAdornment>
-                              ),
+                    <Box sx={{ display: 'flex', gap: 2, ml: 'auto' }}>
+                      {isEditing ? (
+                        <>
+                          <Button
+                            variant="outlined"
+                            onClick={handleEditToggle}
+                            startIcon={<CancelIcon />}
+                            sx={{
+                              borderRadius: 2,
+                              px: 3,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: 2,
+                              },
                             }}
-                            sx={textFieldStyles}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Street Number"
-                            name="number"
-                            value={formData.number}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            type="number"
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <HomeIcon color={isEditing ? "primary" : "disabled"} />
-                                </InputAdornment>
-                              ),
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isSaving}
+                            startIcon={isSaving ? <CircularProgress size={20} /> : <SaveIcon />}
+                            sx={{
+                              borderRadius: 2,
+                              px: 3,
+                              background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                transform: 'translateY(-2px)',
+                                boxShadow: 2,
+                              },
                             }}
-                            sx={textFieldStyles}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="City"
-                            name="city"
-                            value={formData.city}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <LocationCityIcon color={isEditing ? "primary" : "disabled"} />
-                                </InputAdornment>
-                              ),
-                            }}
-                            sx={textFieldStyles}
-                          />
-                        </Grid>
-
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="ZIP Code"
-                            name="zipcode"
-                            value={formData.zipcode}
-                            onChange={handleChange}
-                            disabled={!isEditing}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <LocationOnIcon color={isEditing ? "primary" : "disabled"} />
-                                </InputAdornment>
-                              ),
-                            }}
-                            sx={textFieldStyles}
-                          />
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </Card>
-                </Collapse>
-              </Grid>
-
-              {/* Action Buttons */}
-              <Grid item xs={12}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 2, 
-                  mt: 2 
-                }}>
-                  {/* Show/Hide Additional Fields Button - Only when not editing */}
-                  {!isEditing && (
-                    <Button
-                      variant="text"
-                      onClick={() => setShowAdditionalFields(!showAdditionalFields)}
-                      startIcon={showAdditionalFields ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                      sx={{
-                        textTransform: 'none',
-                        color: theme.palette.primary.main,
-                      }}
-                    >
-                      {showAdditionalFields ? 'Hide Additional Info' : 'Show Additional Info'}
-                    </Button>
-                  )}
-
-                  <Box sx={{ display: 'flex', gap: 2, ml: 'auto' }}>
-                    {isEditing ? (
-                      <>
+                          >
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                          </Button>
+                        </>
+                      ) : (
                         <Button
-                          variant="outlined"
-                          onClick={handleEditToggle}
-                          startIcon={<CancelIcon />}
-                          sx={{
-                            borderRadius: 2,
-                            px: 3,
-                            transition: 'all 0.2s',
-                            '&:hover': {
-                              transform: 'translateY(-2px)',
-                              boxShadow: 2,
-                            },
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
                           variant="contained"
-                          disabled={isUpdating}
-                          startIcon={isUpdating ? <CircularProgress size={20} /> : <SaveIcon />}
+                          onClick={handleEditToggle}
+                          startIcon={<EditIcon />}
                           sx={{
                             borderRadius: 2,
                             px: 3,
@@ -713,35 +771,26 @@ const ProfilePage = () => {
                             },
                           }}
                         >
-                          {isUpdating ? 'Saving...' : 'Save Changes'}
+                          Edit Profile
                         </Button>
-                      </>
-                    ) : (
-                      <Button
-                        variant="contained"
-                        onClick={handleEditToggle}
-                        startIcon={<EditIcon />}
-                        sx={{
-                          borderRadius: 2,
-                          px: 3,
-                          background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: 2,
-                          },
-                        }}
-                      >
-                        Edit Profile
-                      </Button>
-                    )}
+                      )}
+                    </Box>
                   </Box>
-                </Box>
+                </Grid>
               </Grid>
-            </Grid>
-          </form>
+            </form>
+          </Box>
         </Paper>
       </Fade>
+
+      {/* Loading overlay for save operation */}
+      {isSaving && (
+        <LoadingSpinner 
+          fullScreen 
+          message="Saving your profile changes..." 
+          color="primary"
+        />
+      )}
     </Container>
   );
 };

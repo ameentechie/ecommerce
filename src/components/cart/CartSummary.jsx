@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -6,7 +6,8 @@ import {
   Button, 
   Box, 
   Divider,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { ShoppingCart, CreditCard } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -15,14 +16,22 @@ import { useCart } from '../../hooks/useCart';
 const CartSummary = () => {
   const navigate = useNavigate();
   const { items, getTotalPrice, getItemCount } = useCart();
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   
   const subtotal = getTotalPrice();
   const shipping = subtotal > 100 ? 0 : 9.99; // Free shipping over $100
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;
 
-  const handleCheckout = () => {
-    navigate('/checkout');
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      // Simulate checkout preparation
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      navigate('/checkout');
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const handleContinueShopping = () => {
@@ -145,9 +154,9 @@ const CartSummary = () => {
           variant="contained"
           fullWidth
           size="large"
-          startIcon={<CreditCard />}
+          startIcon={isCheckingOut ? <CircularProgress size={20} color="inherit" /> : <CreditCard />}
           onClick={handleCheckout}
-          disabled={items.length === 0}
+          disabled={items.length === 0 || isCheckingOut}
           sx={{
             backgroundColor: '#3182ce',
             color: 'white',
@@ -175,13 +184,14 @@ const CartSummary = () => {
             }
           }}
         >
-          Proceed to Checkout
+          {isCheckingOut ? 'Preparing Checkout...' : 'Proceed to Checkout'}
         </Button>
 
         <Button
           variant="outlined"
           fullWidth
           onClick={handleContinueShopping}
+          disabled={isCheckingOut}
           sx={{
             borderColor: '#3182ce',
             color: '#3182ce',
@@ -193,6 +203,10 @@ const CartSummary = () => {
             '&:hover': {
               borderColor: '#2c5aa0',
               backgroundColor: '#ebf8ff',
+            },
+            '&:disabled': {
+              borderColor: '#a0aec0',
+              color: '#a0aec0',
             }
           }}
         >
