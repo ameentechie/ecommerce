@@ -33,6 +33,8 @@ import ProductSearch from '../components/products/ProductSearch';
 import PriceRangeFilter from '../components/products/PriceRangeFilter';
 import RatingFilter from '../components/products/RatingFilter';
 import Pagination from '../components/common/Pagination';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import ProductSkeleton from '../components/common/ProductSkeleton';
 import { useProducts } from '../hooks/useProducts';
 
 const ProductsPage = () => {
@@ -46,7 +48,7 @@ const ProductsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const { data: products, isLoading } = useProducts();
+  const { data: products, isLoading, error } = useProducts();
 
   // Calculate actual price range from products
   const actualPriceRange = React.useMemo(() => {
@@ -149,6 +151,77 @@ const ProductsPage = () => {
     minRating > 0
   ].filter(Boolean).length;
 
+  // Render loading state
+  if (isLoading) {
+    return (
+      <Box sx={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          {/* Page Header */}
+          <Box sx={{ mb: 4 }}>
+            <Typography 
+              variant="h4" 
+              gutterBottom 
+              sx={{ 
+                fontWeight: 600,
+                color: '#343a40',
+                fontSize: { xs: '1.75rem', md: '2.125rem' }
+              }}
+            >
+              Products
+            </Typography>
+            <Typography variant="body1" sx={{ color: '#6c757d' }}>
+              Loading our amazing products for you...
+            </Typography>
+          </Box>
+
+          {/* Loading Filters */}
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 4,
+              borderRadius: '12px',
+              border: '1px solid #e9ecef',
+              backgroundColor: '#ffffff',
+              overflow: 'hidden',
+            }}
+          >
+            <Box sx={{ p: 3 }}>
+              <LoadingSpinner variant="linear" message="Loading filters..." />
+            </Box>
+          </Paper>
+
+          {/* Loading Products */}
+          <ProductSkeleton count={8} showGrid />
+        </Container>
+      </Box>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <Box sx={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        <Container maxWidth="lg" sx={{ py: 4 }}>
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h5" color="error" gutterBottom>
+              Failed to load products
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+              We're having trouble loading the products. Please try again.
+            </Typography>
+            <Button 
+              variant="contained" 
+              onClick={() => window.location.reload()}
+              sx={{ px: 4 }}
+            >
+              Retry
+            </Button>
+          </Box>
+        </Container>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -166,7 +239,7 @@ const ProductsPage = () => {
             Products
           </Typography>
           <Typography variant="body1" sx={{ color: '#6c757d' }}>
-            Discover our wide range of products
+            Discover our wide range of products ({products?.length || 0} items)
           </Typography>
         </Box>
 

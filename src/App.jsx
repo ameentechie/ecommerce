@@ -20,6 +20,7 @@ import NewItemsPage from './pages/NewItemsPage';
 import ContactPage from './pages/ContactPage';
 import AboutPage from './pages/AboutPage';
 import HelpPage from './pages/HelpPage';
+import LoadingDemoPage from './pages/LoadingDemoPage';
 
 // Cart/Order Components
 import CheckoutPage from './components/cart/CheckoutPage';
@@ -44,6 +45,7 @@ const App = () => (
           <Route path="help" element={<HelpPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
+          <Route path="loading-demo" element={<LoadingDemoPage />} />
           
           {/* Protected Routes */}
           <Route path="cart" element={<ProtectedRoute><CartPage /></ProtectedRoute>} />

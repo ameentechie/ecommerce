@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Container, 
   Typography, 
@@ -8,7 +8,8 @@ import {
   Alert,
   Paper,
   Breadcrumbs,
-  Link
+  Link,
+  CircularProgress
 } from '@mui/material';
 import { 
   ShoppingBag, 
@@ -19,17 +20,38 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
 import CartItem from '../components/cart/CartItem';
 import CartSummary from '../components/cart/CartSummary';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const CartPage = () => {
   const { items, clearAllItems } = useCart();
   const navigate = useNavigate();
+  const [isClearing, setIsClearing] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleContinueShopping = () => {
     navigate('/products');
   };
 
-  const handleClearCart = () => {
-    clearAllItems();
+  const handleClearCart = async () => {
+    setIsClearing(true);
+    try {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      clearAllItems();
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      // Simulate checkout preparation
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      navigate('/checkout');
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
   const EmptyCartState = () => (
@@ -169,16 +191,27 @@ const CartPage = () => {
             variant="outlined"
             color="error"
             onClick={handleClearCart}
+            disabled={isClearing}
+            startIcon={isClearing ? <CircularProgress size={16} /> : null}
             sx={{
               fontWeight: 500,
               textTransform: 'none',
               borderRadius: 2,
             }}
           >
-            Clear Cart
+            {isClearing ? 'Clearing...' : 'Clear Cart'}
           </Button>
         )}
       </Box>
+
+      {/* Loading overlay for checkout */}
+      {isCheckingOut && (
+        <LoadingSpinner 
+          fullScreen 
+          message="Preparing your checkout..." 
+          color="primary"
+        />
+      )}
 
       {/* Cart Content */}
       {items.length === 0 ? (
